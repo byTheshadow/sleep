@@ -970,251 +970,62 @@
       );
       scene.add(dust);
 
-   function createSoftTexture() {
-  const textureCanvas = document.createElement("canvas");
-  textureCanvas.width = 256;
-  textureCanvas.height = 256;
+      function createSheep() {
+        const sheep = new THREE.Group();
+        const wool = new THREE.MeshStandardMaterial({
+          color: 0xf1f1ed,
+          roughness: .95
+        });
+        const dark = new THREE.MeshStandardMaterial({
+          color: 0x17243c,
+          roughness: .8
+        });
 
-  const context = textureCanvas.getContext("2d");
-  const gradient = context.createRadialGradient(
-    128, 128, 4,
-    128, 128, 128
-  );
+        const body = new THREE.Mesh(
+          new THREE.SphereGeometry(.65, 12, 8),
+          wool
+        );
+        body.scale.set(1.35, .88, .78);
+        body.position.y = 1.15;
+        sheep.add(body);
 
-  gradient.addColorStop(0, "rgba(241, 250, 255, 0.95)");
-  gradient.addColorStop(0.22, "rgba(194, 222, 255, 0.56)");
-  gradient.addColorStop(0.52, "rgba(123, 173, 255, 0.18)");
-  gradient.addColorStop(1, "rgba(83, 128, 255, 0)");
+        const head = new THREE.Mesh(
+          new THREE.SphereGeometry(.3, 10, 8),
+          dark
+        );
+        head.position.set(.92, 1.27, -.02);
+        sheep.add(head);
 
-  context.fillStyle = gradient;
-  context.fillRect(0, 0, 256, 256);
+        [-.16, .16].forEach(z => {
+          const ear = new THREE.Mesh(
+            new THREE.ConeGeometry(.1, .34, 5),
+            dark
+          );
+          ear.rotation.z = Math.PI / 2;
+          ear.position.set(1.02, 1.5, z);
+          sheep.add(ear);
+        });
 
-  const texture = new THREE.CanvasTexture(textureCanvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
+        [-.38, .38].forEach(x => {
+          [-.26, .26].forEach(z => {
+            const leg = new THREE.Mesh(
+              new THREE.CylinderGeometry(.065, .075, .55, 7),
+              dark
+            );
+            leg.position.set(x, .55, z);
+            sheep.add(leg);
+          });
+        });
 
-  return texture;
-}
+        const tail = new THREE.Mesh(
+          new THREE.SphereGeometry(.18, 8, 8),
+          wool
+        );
+        tail.position.set(-.93, 1.3, 0);
+        sheep.add(tail);
 
-const sheepGlowTexture = createSoftTexture();
-
-function createSheep() {
-  const sheep = new THREE.Group();
-  const woolGroup = new THREE.Group();
-
-  /*
-   * 核心毛团：
-   * 半透明白色、略带青蓝色反射。
-   */
-  const woolCoreMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xeaf6ff,
-    emissive: 0x1c426d,
-    emissiveIntensity: 0.12,
-    roughness: 0.28,
-    metalness: 0,
-    transparent: true,
-    opacity: 0.82,
-    transmission: 0.08,
-    thickness: 0.5,
-    clearcoat: 0.16,
-    clearcoatRoughness: 0.5,
-    depthWrite: false
-  });
-
-  /*
-   * 外层雾感毛团：
-   * 透明度低，制造毛玻璃、云朵、朦胧边缘。
-   */
-  const woolMistMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xb8dcff,
-    emissive: 0x5b8dcb,
-    emissiveIntensity: 0.18,
-    roughness: 0.18,
-    metalness: 0,
-    transparent: true,
-    opacity: 0.16,
-    transmission: 0.15,
-    thickness: 0.8,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending
-  });
-
-  const faceMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x152747,
-    emissive: 0x172f56,
-    emissiveIntensity: 0.45,
-    roughness: 0.32,
-    transparent: true,
-    opacity: 0.88,
-    transmission: 0.03
-  });
-
-  const earMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x5276aa,
-    emissive: 0x42689f,
-    emissiveIntensity: 0.35,
-    roughness: 0.2,
-    transparent: true,
-    opacity: 0.55,
-    transmission: 0.2,
-    side: THREE.DoubleSide,
-    depthWrite: false
-  });
-
-  /*
-   * 七个不同大小的圆润毛团构成身体。
-   * 比单一椭圆球更像漂浮云朵。
-   */
-  const woolParts = [
-    { x: -0.52, y: 1.17, z:  0.00, s: 0.58 },
-    { x: -0.20, y: 1.37, z: -0.04, s: 0.68 },
-    { x:  0.22, y: 1.38, z:  0.03, s: 0.66 },
-    { x:  0.56, y: 1.20, z:  0.01, s: 0.54 },
-    { x: -0.12, y: 0.99, z:  0.02, s: 0.59 },
-    { x:  0.31, y: 0.97, z: -0.03, s: 0.53 },
-    { x: -0.58, y: 1.02, z:  0.00, s: 0.43 }
-  ];
-
-  woolParts.forEach((part, index) => {
-    const geometry = new THREE.SphereGeometry(
-      part.s,
-      20,
-      16
-    );
-
-    const wool = new THREE.Mesh(geometry, woolCoreMaterial);
-    wool.position.set(part.x, part.y, part.z);
-
-    wool.scale.set(
-      index % 2 === 0 ? 1.08 : 0.96,
-      0.9,
-      index % 3 === 0 ? 0.88 : 1
-    );
-
-    woolGroup.add(wool);
-
-    /*
-     * 每个毛团再加一层略大的透明雾壳。
-     */
-    const mist = new THREE.Mesh(
-      geometry.clone(),
-      woolMistMaterial
-    );
-
-    mist.position.copy(wool.position);
-    mist.scale.copy(wool.scale).multiplyScalar(1.13);
-    woolGroup.add(mist);
-  });
-
-  sheep.add(woolGroup);
-
-  /*
-   * 头部：不使用硬边深色球体，
-   * 改为更圆润的深蓝色半透明脸。
-   */
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.34, 18, 14),
-    faceMaterial
-  );
-
-  head.scale.set(0.88, 1.06, 0.83);
-  head.position.set(0.92, 1.23, -0.01);
-  sheep.add(head);
-
-  /*
-   * 耳朵：轻薄、半透明、偏梦境材质。
-   */
-  [-1, 1].forEach(side => {
-    const ear = new THREE.Mesh(
-      new THREE.SphereGeometry(0.16, 14, 10),
-      earMaterial
-    );
-
-    ear.scale.set(1.55, 0.38, 0.78);
-    ear.position.set(0.98, 1.48, side * 0.22);
-    ear.rotation.x = side * 0.2;
-    ear.rotation.z = side * 0.24;
-
-    sheep.add(ear);
-  });
-
-  /*
-   * 尾巴：一个很轻的小云团。
-   */
-  const tail = new THREE.Mesh(
-    new THREE.SphereGeometry(0.26, 16, 12),
-    woolCoreMaterial
-  );
-
-  tail.position.set(-0.95, 1.18, 0);
-  tail.scale.set(1.05, 0.92, 0.9);
-  sheep.add(tail);
-
-  /*
-   * 用淡蓝色 Sprite 制造毛玻璃光晕。
-   * Sprite 始终朝向镜头，因此有柔焦感。
-   */
-  const glow = new THREE.Sprite(
-    new THREE.SpriteMaterial({
-      map: sheepGlowTexture,
-      color: 0x9ac9ff,
-      transparent: true,
-      opacity: 0.33,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending
-    })
-  );
-
-  glow.position.set(0, 1.2, -0.16);
-  glow.scale.set(3.2, 2.7, 1);
-  sheep.add(glow);
-
-  /*
-   * 用两个极细小的低亮度眼睛保留一点生命感；
-   * 不会变成卡通脸。
-   */
-  const eyeMaterial = new THREE.MeshBasicMaterial({
-    color: 0xd7e8ff,
-    transparent: true,
-    opacity: 0.8
-  });
-
-  [-0.12, 0.12].forEach(z => {
-    const eye = new THREE.Mesh(
-      new THREE.SphereGeometry(0.026, 8, 8),
-      eyeMaterial
-    );
-
-    eye.position.set(1.205, 1.3, z);
-    sheep.add(eye);
-  });
-
-  /*
-   * 不再添加明显的四只柱状腿。
-   * 只有两条很淡的“光影腿”，让它像在雾上跳跃。
-   */
-  const legMaterial = new THREE.MeshBasicMaterial({
-    color: 0x6f9fd0,
-    transparent: true,
-    opacity: 0.23,
-    depthWrite: false
-  });
-
-  [-0.35, 0.35].forEach(x => {
-    const leg = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.027, 0.04, 0.46, 8),
-      legMaterial
-    );
-
-    leg.position.set(x, 0.65, 0);
-    sheep.add(leg);
-  });
-
-  sheep.userData.woolGroup = woolGroup;
-  sheep.userData.glow = glow;
-  sheep.userData.floatOffset = Math.random() * Math.PI * 2;
-
-  return sheep;
-}
+        return sheep;
+      }
 
       const sheepAnimations = [];
 
@@ -1285,40 +1096,12 @@ function createSheep() {
           const p = Math.min(elapsed / item.duration, 1);
           const x = -5.9 + p * 11.8;
 
-        const jumpHeight = Math.sin(p * Math.PI) * 1.72;
-const floatWave = Math.sin(seconds * 3.2 + item.object.userData.floatOffset) * 0.08;
-const softDrift = Math.sin(p * Math.PI * 2) * 0.12;
-
-item.object.position.x = x * item.direction;
-item.object.position.y = 0.18 + jumpHeight + floatWave;
-item.object.position.z = -0.15 + softDrift;
-
-item.object.rotation.z =
-  Math.sin(p * Math.PI * 2) * 0.075 * item.direction;
-
-item.object.rotation.x =
-  Math.sin(p * Math.PI) * 0.08;
-
-if (item.object.userData.woolGroup) {
-  const breathe = 1 + Math.sin(seconds * 3.2 + item.object.userData.floatOffset) * 0.035;
-
-  item.object.userData.woolGroup.scale.set(
-    breathe,
-    1 / breathe,
-    breathe
-  );
-}
-
-if (item.object.userData.glow) {
-  const glowPulse = 1 + Math.sin(seconds * 2.8 + item.object.userData.floatOffset) * 0.08;
-
-  item.object.userData.glow.scale.set(
-    3.2 * glowPulse,
-    2.7 * glowPulse,
-    1
-  );
-}
-
+          item.object.position.x = x * item.direction;
+          item.object.position.y =
+            .1 + Math.sin(Math.min(p * Math.PI, Math.PI)) * 2.05;
+          item.object.position.z += Math.sin(elapsed * .004) * .002;
+          item.object.rotation.z =
+            Math.sin(p * Math.PI * 2) * .12 * item.direction;
 
           if (p >= 1) {
             scene.remove(item.object);

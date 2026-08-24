@@ -473,23 +473,25 @@
 
   <div class="toast" id="toast"></div>
 
-  <audio
-    id="music"
-    loop
-    preload="auto"
-    crossorigin="anonymous"
-    src="https://github.com/byTheshadow/song/raw/refs/heads/main/M500002cpSrR4LxYtY.mp3">
-  </audio>
+ <audio
+  id="music"
+  loop
+  preload="auto
+  src="https://raw.githubusercontent.com/byTheshadow/song/main/M500002cpSrR4LxYtY.mp3">
+</audio>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+  <script src="https://unpkg.com/three@0.159.0/build/three.min.js"></script>
+
 
   <script>
     (() => {
       "use strict";
 
       const MAX_SHEEP = 100;
-      const MUSIC_URL =
-        "https://github.com/byTheshadow/song/raw/refs/heads/main/M500002cpSrR4LxYtY.mp3";
+     const MUSIC_URL =
+  "https://raw.githubusercontent.com/byTheshadow/song/main/M500002cpSrR4LxYtY.mp3";
+
 
       const messages = [
         ["Let the day loosen its grip.", "让今天，慢慢松开手。"],
@@ -688,7 +690,8 @@
         updateUI();
         displayMessage();
         sheepSound();
-        world.addSheep();
+        addSheep();
+
 
         if (count === 72) {
           showToast("The seventy-second sheep has crossed.");

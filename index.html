@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#071326" />
+  <title>第七十二只羊 / The Seventy-Second Sheep</title>
+
+  <style>
+    :root {
+      --green: #79c9a0;
+      --blue: #7f9dff;
+      --white: #eef4ff;
+      --muted: rgba(230, 239, 255, .62);
+      --glass: rgba(8, 18, 41, .38);
+      --line: rgba(220, 235, 255, .19);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #071326;
+      color: var(--white);
+      font-family:
+        Inter,
+        "Helvetica Neue",
+        Helvetica,
+        Arial,
+        "PingFang SC",
+        "Microsoft YaHei",
+        sans-serif;
+    }
+
+    body {
+      cursor: default;
+    }
+
+    button {
+      color: inherit;
+      font: inherit;
+    }
+
+    #scene {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      outline: none;
+    }
+
+    .shade {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 44%, transparent 0%, rgba(4, 8, 24, .05) 42%, rgba(2, 6, 20, .58) 100%),
+        linear-gradient(180deg, rgba(5, 12, 34, .12), transparent 50%, rgba(4, 8, 26, .34));
+      z-index: 1;
+    }
+
+    .grain {
+      position: fixed;
+      inset: -50%;
+      z-index: 2;
+      pointer-events: none;
+      opacity: .075;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+      animation: grainMove .25s steps(2) infinite;
+    }
+
+    @keyframes grainMove {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(2%, -1%); }
+      50% { transform: translate(-1%, 2%); }
+      75% { transform: translate(1%, 1%); }
+      100% { transform: translate(-2%, -1%); }
+    }
+
+    .topbar,
+    .hero,
+    .bottom-panel {
+      position: fixed;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .topbar {
+      top: 27px;
+      left: 34px;
+      right: 34px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      text-transform: uppercase;
+      letter-spacing: .2em;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .brand {
+      color: rgba(241, 247, 255, .85);
+      line-height: 1.7;
+    }
+
+    .brand strong {
+      color: var(--white);
+      font-weight: 500;
+    }
+
+    .progress-wrap {
+      text-align: right;
+    }
+
+    .progress {
+      width: 110px;
+      height: 2px;
+      margin-top: 8px;
+      background: rgba(255,255,255,.18);
+      overflow: hidden;
+    }
+
+    .progress i {
+      display: block;
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--blue));
+      transition: width 1s ease;
+    }
+
+    .hero {
+      top: 50%;
+      left: 50%;
+      width: min(90vw, 720px);
+      transform: translate(-50%, -48%);
+      text-align: center;
+    }
+
+    .eyebrow {
+      margin-bottom: 16px;
+      color: rgba(226, 238, 255, .64);
+      font-size: 10px;
+      letter-spacing: .35em;
+      text-transform: uppercase;
+    }
+
+    .count {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(58px, 10vw, 120px);
+      line-height: .9;
+      letter-spacing: -.06em;
+      text-shadow: 0 0 35px rgba(151, 177, 255, .18);
+    }
+
+    .count-label {
+      margin-top: 17px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .26em;
+      text-transform: uppercase;
+    }
+
+    .message {
+      min-height: 62px;
+      margin: 29px auto 28px;
+      max-width: 530px;
+      color: rgba(244, 247, 255, .92);
+      font-family: Georgia, "Songti SC", "SimSun", serif;
+      font-size: clamp(16px, 2vw, 21px);
+      line-height: 1.7;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, .25);
+      transition: opacity .45s ease, transform .45s ease;
+    }
+
+    .message.fade {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    .message small {
+      display: block;
+      margin-top: 4px;
+      color: rgba(228, 237, 255, .62);
+      font-family: Inter, Arial, sans-serif;
+      font-size: 10px;
+      letter-spacing: .06em;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    .button {
+      min-height: 42px;
+      padding: 0 17px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(10, 24, 50, .34);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      color: rgba(244, 248, 255, .9);
+      font-size: 10px;
+      letter-spacing: .1em;
+      cursor: pointer;
+      transition: background .25s ease, border-color .25s ease, transform .25s ease;
+    }
+
+    .button:hover {
+      background: rgba(110, 153, 220, .22);
+      border-color: rgba(220, 237, 255, .45);
+      transform: translateY(-2px);
+    }
+
+    .button.primary {
+      border-color: rgba(175, 218, 205, .65);
+      background: linear-gradient(100deg, rgba(77, 151, 119, .38), rgba(70, 90, 180, .35));
+    }
+
+    .button:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .bottom-panel {
+      left: 34px;
+      right: 34px;
+      bottom: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      pointer-events: auto;
+    }
+
+    .tools {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tool {
+      min-width: 40px;
+      height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--glass);
+      color: rgba(232, 240, 255, .72);
+      font-size: 9px;
+      letter-spacing: .1em;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .tool:hover {
+      color: white;
+      border-color: rgba(220, 237, 255, .4);
+    }
+
+    .speed {
+      display: none;
+      gap: 6px;
+    }
+
+    .speed.visible {
+      display: flex;
+    }
+
+    .status {
+      color: rgba(230, 239, 255, .5);
+      font-size: 9px;
+      letter-spacing: .12em;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    .enter-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 48%, #143c39 0%, #0c2630 32%, #071326 75%);
+      cursor: pointer;
+      transition: opacity 1.1s ease, visibility 1.1s ease;
+    }
+
+    .enter-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .enter-content {
+      padding: 30px;
+      text-align: center;
+      animation: breathe 5s ease-in-out infinite;
+    }
+
+    .enter-title {
+      margin-bottom: 27px;
+      color: rgba(245, 249, 255, .94);
+      font-size: clamp(18px, 3vw, 31px);
+      font-weight: 300;
+      letter-spacing: .25em;
+      text-indent: .25em;
+    }
+
+    .enter-line {
+      color: rgba(225, 237, 255, .67);
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 15px;
+      line-height: 2;
+    }
+
+    .enter-hint {
+      margin-top: 38px;
+      color: rgba(185, 222, 211, .7);
+      font-size: 9px;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); opacity: .82; }
+      50% { transform: scale(1.025); opacity: 1; }
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 10;
+      left: 50%;
+      bottom: 88px;
+      padding: 10px 15px;
+      border: 1px solid rgba(220, 237, 255, .2);
+      border-radius: 20px;
+      background: rgba(7, 17, 37, .65);
+      color: rgba(238, 245, 255, .75);
+      font-size: 10px;
+      letter-spacing: .08em;
+      opacity: 0;
+      transform: translate(-50%, 10px);
+      transition: opacity .4s ease, transform .4s ease;
+      pointer-events: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @media (max-width: 620px) {
+      .topbar {
+        top: 19px;
+        left: 18px;
+        right: 18px;
+      }
+
+      .bottom-panel {
+        left: 18px;
+        right: 18px;
+        bottom: 17px;
+        align-items: flex-end;
+      }
+
+      .status {
+        max-width: 90px;
+      }
+
+      .hero {
+        transform: translate(-50%, -54%);
+      }
+
+      .message {
+        margin-top: 25px;
+      }
+
+      .button {
+        font-size: 9px;
+        padding: 0 12px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="scene"></canvas>
+  <div class="shade"></div>
+  <div class="grain"></div>
+
+  <div class="enter-screen" id="enterScreen">
+    <div class="enter-content">
+      <div class="enter-title">THE SEVENTY-SECOND SHEEP</div>
+      <div class="enter-line">Press anywhere to enter the field.</div>
+      <div class="enter-line">点击任意处，进入草地。</div>
+      <div class="enter-hint">enter the green · drift into blue</div>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <strong>第七十二只羊</strong><br />
+      THE SEVENTY-SECOND SHEEP
+    </div>
+    <div class="progress-wrap">
+      <span id="progressText">0 / 100 SHEEP</span>
+      <div class="progress"><i id="progressBar"></i></div>
+    </div>
+  </header>
+
+  <main class="hero">
+    <div class="eyebrow">A SMALL PLACE TO REST</div>
+    <h1 class="count" id="count">000</h1>
+    <div class="count-label">sheep crossed the field · 羊已越过草地</div>
+
+    <div class="message" id="message">
+      Tonight, nothing needs to be solved.
+      <small>今夜，没有什么必须被解决。</small>
+    </div>
+
+    <div class="actions">
+      <button class="button primary" id="countBtn">COUNT ONE · 数一只羊</button>
+      <button class="button" id="autoBtn">DRIFT AUTOMATICALLY · 自动漫游</button>
+    </div>
+  </main>
+
+  <footer class="bottom-panel">
+    <div class="tools">
+      <button class="tool" id="soundBtn">SOUND ON</button>
+      <button class="tool" id="clearBtn">CLEAR · 清空</button>
+
+      <div class="speed" id="speed">
+        <button class="tool" data-speed="8000">SLOW</button>
+        <button class="tool" data-speed="5000">GENTLE</button>
+        <button class="tool" data-speed="3000">DREAMY</button>
+      </div>
+
+      <button class="tool" id="fullscreenBtn">FULLSCREEN</button>
+    </div>
+
+    <div class="status" id="status">
+      manual mode<br />
+      green field
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <audio
+    id="music"
+    loop
+    preload="auto"
+    crossorigin="anonymous"
+    src="https://github.com/byTheshadow/song/raw/refs/heads/main/M500002cpSrR4LxYtY.mp3">
+  </audio>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const MAX_SHEEP = 100;
+      const MUSIC_URL =
+        "https://github.com/byTheshadow/song/raw/refs/heads/main/M500002cpSrR4LxYtY.mp3";
+
+      const messages = [
+        ["Let the day loosen its grip.", "让今天，慢慢松开手。"],
+        ["You do not have to chase sleep.", "你不必追赶睡意。"],
+        ["A thought is only passing weather.", "念头只是路过的天气。"],
+        ["Inhale the green.", "吸入草地的绿。"],
+        ["Exhale into blue.", "呼出，进入蓝色。"],
+        ["Your body remembers how to rest.", "你的身体记得如何休息。"],
+        ["Nothing is asking for your attention now.", "现在，没有什么需要你的注意。"],
+        ["You are allowed to be unfinished.", "你可以不完整。"],
+        ["The quiet is already here.", "安静已经在这里。"],
+        ["Leave one small worry by the fence.", "把一个小小的担忧留在栅栏旁。"],
+        ["The night has enough space for you.", "夜晚有足够的空间容纳你。"],
+        ["Softness is not a weakness.", "柔软不是软弱。"],
+        ["There is nowhere else to arrive.", "你不必抵达别的地方。"],
+        ["Let your shoulders descend.", "让肩膀慢慢落下来。"],
+        ["The blue is carrying you now.", "现在，蓝色正在托住你。"],
+        ["Breathe in. Stay. Breathe out.", "吸气。停留。呼气。"],
+        ["You can listen without answering.", "你可以只听见，不必回答。"],
+        ["The field is wide enough for every thought.", "这片草地足够宽，能容纳每一个念头。"],
+        ["Rest is something you do not need to earn.", "休息不需要被赢得。"],
+        ["Follow the sheep, or stay beneath the moon.", "可以跟着羊，也可以留在月亮下。"],
+        ["The distance between green and blue is gentle.", "绿色与蓝色之间的距离很温柔。"],
+        ["Let the next breath be unhurried.", "让下一次呼吸不慌不忙。"],
+        ["You have done enough for today.", "今天，你已经做得够多了。"],
+        ["The dark is not empty.", "黑暗并不是空的。"],
+        ["A little less effort. A little more sky.", "少一点用力，多一点天空。"],
+        ["The stars do not need to be counted.", "星星不需要被数清。"],
+        ["Nothing needs to change in this moment.", "此刻，不需要改变任何事。"],
+        ["Sleep may come quietly, without an announcement.", "睡意也许会安静地到来。"],
+        ["You can put the day down now.", "现在，可以把这一天放下了。"],
+        ["Somewhere between waking and dreaming, breathe.", "在醒着与梦之间，呼吸。"],
+        ["The moon is not in a hurry.", "月亮并不着急。"],
+        ["Let your mind wander without following it.", "让思绪游走，不必跟随。"],
+        ["The grass is holding the night.", "草地正在托住夜晚。"],
+        ["You are safe to become still.", "你可以安心地静下来。"],
+        ["The next moment asks for nothing.", "下一个瞬间什么也不要求。"],
+        ["Blue arrives one breath at a time.", "蓝色，一次呼吸一点点抵达。"],
+        ["Even the clouds know how to drift.", "就连云也知道如何漂流。"],
+        ["The field does not judge your pace.", "草地不会评判你的速度。"],
+        ["Let the edges of the day become soft.", "让这一天的边缘变得柔软。"],
+        ["You may rest before everything is finished.", "一切尚未完成，也可以休息。"]
+      ];
+
+      let count = Number(localStorage.getItem("sheep-count") || 0);
+      count = Math.max(0, Math.min(MAX_SHEEP, count));
+
+      let autoTimer = null;
+      let autoRunning = false;
+      let autoSpeed = 5000;
+      let soundOn = true;
+      let audioContext = null;
+      let windGain = null;
+      let windOscillator = null;
+      let entered = false;
+      let lastMessageIndex = -1;
+
+      const $ = id => document.getElementById(id);
+      const canvas = $("scene");
+      const countEl = $("count");
+      const messageEl = $("message");
+      const progressText = $("progressText");
+      const progressBar = $("progressBar");
+      const countBtn = $("countBtn");
+      const autoBtn = $("autoBtn");
+      const soundBtn = $("soundBtn");
+      const clearBtn = $("clearBtn");
+      const fullscreenBtn = $("fullscreenBtn");
+      const speedEl = $("speed");
+      const statusEl = $("status");
+      const toastEl = $("toast");
+      const enterScreen = $("enterScreen");
+      const music = $("music");
+
+      music.volume = 0.34;
+      music.src = MUSIC_URL;
+
+      function showToast(text) {
+        toastEl.textContent = text;
+        toastEl.classList.add("show");
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toastEl.classList.remove("show"), 2300);
+      }
+
+      function updateUI() {
+        countEl.textContent = String(count).padStart(3, "0");
+        progressText.textContent = `${count} / ${MAX_SHEEP} SHEEP`;
+        progressBar.style.width = `${count}%`;
+        countBtn.disabled = count >= MAX_SHEEP;
+        localStorage.setItem("sheep-count", count);
+
+        if (count >= MAX_SHEEP) {
+          statusEl.innerHTML = "the field is complete<br />the blue has arrived";
+        } else if (count >= 72) {
+          statusEl.innerHTML = "deep blue field<br />dream mode";
+        } else if (count >= 35) {
+          statusEl.innerHTML = "between green and blue<br />floating mode";
+        } else {
+          statusEl.innerHTML = autoRunning
+            ? "automatic drifting<br />green field"
+            : "manual mode<br />green field";
+        }
+      }
+
+      function randomMessage() {
+        let index;
+        do {
+          index = Math.floor(Math.random() * messages.length);
+        } while (index === lastMessageIndex && messages.length > 1);
+
+        lastMessageIndex = index;
+        return messages[index];
+      }
+
+      function displayMessage() {
+        const [english, chinese] = randomMessage();
+        messageEl.classList.add("fade");
+
+        setTimeout(() => {
+          messageEl.innerHTML = `${english}<small>${chinese}</small>`;
+          messageEl.classList.remove("fade");
+        }, 320);
+      }
+
+      function initAudio() {
+        if (audioContext) {
+          if (audioContext.state === "suspended") audioContext.resume();
+          return;
+        }
+
+        try {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+          windOscillator = audioContext.createOscillator();
+          windGain = audioContext.createGain();
+
+          windOscillator.type = "sine";
+          windOscillator.frequency.value = 62;
+          windGain.gain.value = 0.008;
+
+          windOscillator.connect(windGain);
+          windGain.connect(audioContext.destination);
+          windOscillator.start();
+
+          if (soundOn) {
+            music.play().catch(() => {
+              showToast("点击 SOUND ON 开启音乐");
+            });
+          }
+        } catch (error) {
+          console.warn("Web Audio is unavailable.", error);
+        }
+      }
+
+      function sheepSound() {
+        if (!soundOn || !audioContext) return;
+
+        const now = audioContext.currentTime;
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(85, now + .28);
+
+        gain.gain.setValueAtTime(.0001, now);
+        gain.gain.exponentialRampToValueAtTime(.035, now + .025);
+        gain.gain.exponentialRampToValueAtTime(.0001, now + .38);
+
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.start(now);
+        osc.stop(now + .4);
+      }
+
+      function setSound(enabled) {
+        soundOn = enabled;
+        soundBtn.textContent = soundOn ? "SOUND ON" : "SOUND OFF";
+
+        if (soundOn) {
+          initAudio();
+          music.play().catch(() => {});
+        } else {
+          music.pause();
+        }
+      }
+
+      function countOne() {
+        if (!entered) return;
+        if (count >= MAX_SHEEP) {
+          showToast("The field is complete · 草地已经完成");
+          return;
+        }
+
+        count++;
+        updateUI();
+        displayMessage();
+        sheepSound();
+        world.addSheep();
+
+        if (count === 72) {
+          showToast("The seventy-second sheep has crossed.");
+          messageEl.innerHTML =
+            "The seventy-second sheep has crossed.<small>第七十二只羊已经越过栅栏。</small>";
+        }
+
+        if (count === MAX_SHEEP) {
+          stopAuto();
+          showToast("One hundred sheep · 一百只羊");
+        }
+      }
+
+      function startAuto() {
+        if (count >= MAX_SHEEP) return;
+
+        autoRunning = true;
+        autoBtn.textContent = "PAUSE DRIFT · 暂停漂流";
+        speedEl.classList.add("visible");
+        statusEl.innerHTML = "automatic drifting<br />green field";
+        clearInterval(autoTimer);
+        autoTimer = setInterval(countOne, autoSpeed);
+      }
+
+      function stopAuto() {
+        autoRunning = false;
+        autoBtn.textContent = "DRIFT AUTOMATICALLY · 自动漫游";
+        speedEl.classList.remove("visible");
+        clearInterval(autoTimer);
+        autoTimer = null;
+        updateUI();
+      }
+
+      function toggleAuto() {
+        if (autoRunning) stopAuto();
+        else startAuto();
+      }
+
+      function clearCount() {
+        const confirmed = confirm("Clear the current sheep count?\n清空当前数羊数量？");
+        if (!confirmed) return;
+
+        stopAuto();
+        count = 0;
+        lastMessageIndex = -1;
+        updateUI();
+        messageEl.innerHTML =
+          "Tonight, nothing needs to be solved.<small>今夜，没有什么必须被解决。</small>";
+        showToast("The field is empty again · 草地重新安静了");
+      }
+
+      enterScreen.addEventListener("click", () => {
+        entered = true;
+        enterScreen.classList.add("hidden");
+        initAudio();
+        updateUI();
+      });
+
+      countBtn.addEventListener("click", countOne);
+      autoBtn.addEventListener("click", toggleAuto);
+      clearBtn.addEventListener("click", clearCount);
+
+      soundBtn.addEventListener("click", () => {
+        setSound(!soundOn);
+      });
+
+      fullscreenBtn.addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen?.();
+        } else {
+          document.exitFullscreen?.();
+        }
+      });
+
+      document.querySelectorAll("[data-speed]").forEach(button => {
+        button.addEventListener("click", () => {
+          autoSpeed = Number(button.dataset.speed);
+          if (autoRunning) {
+            clearInterval(autoTimer);
+            autoTimer = setInterval(countOne, autoSpeed);
+          }
+          showToast(`${button.textContent} · speed selected`);
+        });
+      });
+
+      window.addEventListener("keydown", event => {
+        if (event.code === "Space") {
+          event.preventDefault();
+          if (!entered) {
+            enterScreen.click();
+          } else {
+            countOne();
+          }
+        }
+
+        if (event.key.toLowerCase() === "a" && entered) toggleAuto();
+        if (event.key.toLowerCase() === "m" && entered) setSound(!soundOn);
+        if (event.key.toLowerCase() === "f" && entered) fullscreenBtn.click();
+      });
+
+      /*
+       * Three.js dream field
+       */
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x091a31, 0.018);
+
+      const camera = new THREE.PerspectiveCamera(
+        48,
+        window.innerWidth / window.innerHeight,
+        .1,
+        300
+      );
+      camera.position.set(0, 5.4, 14);
+      camera.lookAt(0, 1.5, 0);
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: false
+      });
+
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.15;
+      renderer.setClearColor(0x071326, 1);
+
+      const ambient = new THREE.HemisphereLight(0x91b7ff, 0x102b24, 1.5);
+      scene.add(ambient);
+
+      const moonLight = new THREE.PointLight(0x8da8ff, 30, 45, 2);
+      moonLight.position.set(3, 9, -8);
+      scene.add(moonLight);
+
+      const greenLight = new THREE.PointLight(0x55c69a, 12, 23, 2);
+      greenLight.position.set(-7, 2, 2);
+      scene.add(greenLight);
+
+      const field = new THREE.Group();
+      scene.add(field);
+
+      const meadowMaterial = new THREE.MeshStandardMaterial({
+        color: 0x3c8668,
+        roughness: 1,
+        metalness: 0
+      });
+
+      const meadow = new THREE.Mesh(
+        new THREE.CylinderGeometry(6.7, 7.3, .72, 32),
+        meadowMaterial
+      );
+      meadow.position.set(0, -.15, 0);
+      meadow.scale.z = .62;
+      field.add(meadow);
+
+      const meadowTop = new THREE.Mesh(
+        new THREE.CircleGeometry(6.65, 32),
+        new THREE.MeshStandardMaterial({
+          color: 0x67b387,
+          roughness: 1,
+          side: THREE.DoubleSide
+        })
+      );
+      meadowTop.rotation.x = -Math.PI / 2;
+      meadowTop.position.y = .22;
+      meadowTop.scale.y = .62;
+      field.add(meadowTop);
+
+      const fenceMaterial = new THREE.MeshStandardMaterial({
+        color: 0xc6d5d2,
+        roughness: .8,
+        metalness: .05
+      });
+
+      const fence = new THREE.Group();
+      fence.position.set(0, .5, -.15);
+      field.add(fence);
+
+      function addFencePost(x) {
+        const post = new THREE.Mesh(
+          new THREE.CylinderGeometry(.09, .12, 1.55, 8),
+          fenceMaterial
+        );
+        post.position.x = x;
+        fence.add(post);
+      }
+
+      [-2.4, 0, 2.4].forEach(addFencePost);
+
+      [0.35, .9].forEach(y => {
+        const rail = new THREE.Mesh(
+          new THREE.BoxGeometry(5.1, .11, .12),
+          fenceMaterial
+        );
+        rail.position.y = y;
+        fence.add(rail);
+      });
+
+      const moon = new THREE.Mesh(
+        new THREE.SphereGeometry(2.05, 32, 32),
+        new THREE.MeshBasicMaterial({
+          color: 0xc6d7ff,
+          transparent: true,
+          opacity: .92
+        })
+      );
+      moon.position.set(4.4, 8, -12);
+      scene.add(moon);
+
+      const moonGlow = new THREE.Mesh(
+        new THREE.SphereGeometry(2.55, 32, 32),
+        new THREE.MeshBasicMaterial({
+          color: 0x789aff,
+          transparent: true,
+          opacity: .08,
+          blending: THREE.AdditiveBlending
+        })
+      );
+      moonGlow.position.copy(moon.position);
+      scene.add(moonGlow);
+
+      const starsGeometry = new THREE.BufferGeometry();
+      const starPositions = [];
+
+      for (let i = 0; i < 850; i++) {
+        starPositions.push(
+          (Math.random() - .5) * 90,
+          Math.random() * 42 + 2,
+          -Math.random() * 45 - 8
+        );
+      }
+
+      starsGeometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(starPositions, 3)
+      );
+
+      const stars = new THREE.Points(
+        starsGeometry,
+        new THREE.PointsMaterial({
+          color: 0xc9dcff,
+          size: .045,
+          transparent: true,
+          opacity: .8,
+          sizeAttenuation: true
+        })
+      );
+      scene.add(stars);
+
+      const dustGeometry = new THREE.BufferGeometry();
+      const dustPositions = [];
+
+      for (let i = 0; i < 270; i++) {
+        dustPositions.push(
+          (Math.random() - .5) * 30,
+          Math.random() * 14 - 1,
+          (Math.random() - .5) * 18 - 4
+        );
+      }
+
+      dustGeometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(dustPositions, 3)
+      );
+
+      const dust = new THREE.Points(
+        dustGeometry,
+        new THREE.PointsMaterial({
+          color: 0x9eb8ff,
+          size: .07,
+          transparent: true,
+          opacity: .34,
+          blending: THREE.AdditiveBlending
+        })
+      );
+      scene.add(dust);
+
+      function createSheep() {
+        const sheep = new THREE.Group();
+        const wool = new THREE.MeshStandardMaterial({
+          color: 0xf1f1ed,
+          roughness: .95
+        });
+        const dark = new THREE.MeshStandardMaterial({
+          color: 0x17243c,
+          roughness: .8
+        });
+
+        const body = new THREE.Mesh(
+          new THREE.SphereGeometry(.65, 12, 8),
+          wool
+        );
+        body.scale.set(1.35, .88, .78);
+        body.position.y = 1.15;
+        sheep.add(body);
+
+        const head = new THREE.Mesh(
+          new THREE.SphereGeometry(.3, 10, 8),
+          dark
+        );
+        head.position.set(.92, 1.27, -.02);
+        sheep.add(head);
+
+        [-.16, .16].forEach(z => {
+          const ear = new THREE.Mesh(
+            new THREE.ConeGeometry(.1, .34, 5),
+            dark
+          );
+          ear.rotation.z = Math.PI / 2;
+          ear.position.set(1.02, 1.5, z);
+          sheep.add(ear);
+        });
+
+        [-.38, .38].forEach(x => {
+          [-.26, .26].forEach(z => {
+            const leg = new THREE.Mesh(
+              new THREE.CylinderGeometry(.065, .075, .55, 7),
+              dark
+            );
+            leg.position.set(x, .55, z);
+            sheep.add(leg);
+          });
+        });
+
+        const tail = new THREE.Mesh(
+          new THREE.SphereGeometry(.18, 8, 8),
+          wool
+        );
+        tail.position.set(-.93, 1.3, 0);
+        sheep.add(tail);
+
+        return sheep;
+      }
+
+      const sheepAnimations = [];
+
+      function addSheep() {
+        const sheep = createSheep();
+        const direction = Math.random() > .5 ? 1 : -1;
+        sheep.scale.setScalar(.88 + Math.random() * .18);
+        sheep.position.set(-5.9 * direction, .1, -0.2 + Math.random() * .45);
+        sheep.rotation.y = direction > 0 ? 0 : Math.PI;
+        scene.add(sheep);
+
+        sheepAnimations.push({
+          object: sheep,
+          start: performance.now(),
+          direction,
+          duration: 3000 + Math.random() * 500
+        });
+      }
+
+      const pointer = { x: 0, y: 0 };
+
+      window.addEventListener("pointermove", event => {
+        pointer.x = (event.clientX / window.innerWidth - .5);
+        pointer.y = (event.clientY / window.innerHeight - .5);
+      });
+
+      function updateColors() {
+        const t = Math.min(count / 100, 1);
+        const green = new THREE.Color(0x3c8668);
+        const blue = new THREE.Color(0x1e397c);
+        const topGreen = new THREE.Color(0x67b387);
+        const topBlue = new THREE.Color(0x334a9b);
+        const skyGreen = new THREE.Color(0x102c35);
+        const skyBlue = new THREE.Color(0x071326);
+
+        meadowMaterial.color.lerpColors(green, blue, t);
+        meadowTop.material.color.lerpColors(topGreen, topBlue, t);
+        renderer.setClearColor(skyGreen.clone().lerp(skyBlue, t), 1);
+
+        greenLight.intensity = 12 * (1 - t) + 3;
+        moonLight.intensity = 22 + t * 18;
+        dust.material.opacity = .22 + t * .24;
+      }
+
+      function animate(time) {
+        requestAnimationFrame(animate);
+
+        const seconds = time * .001;
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const motion = reduced ? .2 : 1;
+
+        updateColors();
+
+        field.rotation.y = Math.sin(seconds * .09) * .018 * motion;
+        field.position.y = Math.sin(seconds * .55) * .08 * motion;
+
+        camera.position.x += ((pointer.x * .72) - camera.position.x) * .018;
+        camera.position.y += ((5.4 - pointer.y * .35) - camera.position.y) * .018;
+        camera.lookAt(0, 1.5, 0);
+
+        moonGlow.scale.setScalar(1 + Math.sin(seconds * .7) * .025);
+        stars.rotation.y = seconds * .003 * motion;
+        dust.rotation.y = -seconds * .008 * motion;
+
+        for (let i = sheepAnimations.length - 1; i >= 0; i--) {
+          const item = sheepAnimations[i];
+          const elapsed = time - item.start;
+          const p = Math.min(elapsed / item.duration, 1);
+          const x = -5.9 + p * 11.8;
+
+          item.object.position.x = x * item.direction;
+          item.object.position.y =
+            .1 + Math.sin(Math.min(p * Math.PI, Math.PI)) * 2.05;
+          item.object.position.z += Math.sin(elapsed * .004) * .002;
+          item.object.rotation.z =
+            Math.sin(p * Math.PI * 2) * .12 * item.direction;
+
+          if (p >= 1) {
+            scene.remove(item.object);
+            sheepAnimations.splice(i, 1);
+          }
+        }
+
+        renderer.render(scene, camera);
+      }
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      updateUI();
+      animate(0);
+    })();
+  </script>
+</body>
+</html>
